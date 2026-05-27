@@ -3,12 +3,6 @@ package httpSwagger
 import (
 	"html/template"
 	"net/http"
-	"net/url"
-	"path/filepath"
-	"regexp"
-
-	swaggerFiles "github.com/swaggo/files/v2"
-	"github.com/swaggo/swag"
 )
 
 // WrapHandler wraps swaggerFiles.Handler and returns http.HandlerFunc.
@@ -33,85 +27,40 @@ type Config struct {
 }
 
 // URL presents the url pointing to API definition (normally swagger.json or swagger.yaml).
-func URL(url string) func(*Config) {
-	return func(c *Config) {
-		c.URL = url
-	}
-}
+func URL(url string) func(*Config) { _ = "STUB: not implemented"; return nil }
 
 // DeepLinking true, false.
-func DeepLinking(deepLinking bool) func(*Config) {
-	return func(c *Config) {
-		c.DeepLinking = deepLinking
-	}
-}
+func DeepLinking(deepLinking bool) func(*Config) { _ = "STUB: not implemented"; return nil }
 
 // DocExpansion list, full, none.
-func DocExpansion(docExpansion string) func(*Config) {
-	return func(c *Config) {
-		c.DocExpansion = docExpansion
-	}
-}
+func DocExpansion(docExpansion string) func(*Config) { _ = "STUB: not implemented"; return nil }
 
 // DomID #swagger-ui.
-func DomID(domID string) func(*Config) {
-	return func(c *Config) {
-		c.DomID = domID
-	}
-}
+func DomID(domID string) func(*Config) { _ = "STUB: not implemented"; return nil }
 
 // InstanceName set the instance name that was used to generate the swagger documents
 // Defaults to swag.Name ("swagger").
-func InstanceName(name string) func(*Config) {
-	return func(c *Config) {
-		c.InstanceName = name
-	}
-}
+func InstanceName(name string) func(*Config) { _ = "STUB: not implemented"; return nil }
 
 // PersistAuthorization Persist authorization information over browser close/refresh.
 // Defaults to false.
 func PersistAuthorization(persistAuthorization bool) func(*Config) {
-	return func(c *Config) {
-		c.PersistAuthorization = persistAuthorization
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // Plugins specifies additional plugins to load into Swagger UI.
-func Plugins(plugins []string) func(*Config) {
-	return func(c *Config) {
-		vs := make([]template.JS, len(plugins))
-		for i, v := range plugins {
-			vs[i] = template.JS(v)
-		}
-		c.Plugins = vs
-	}
-}
+func Plugins(plugins []string) func(*Config) { _ = "STUB: not implemented"; return nil }
 
 // UIConfig specifies additional SwaggerUIBundle config object properties.
-func UIConfig(props map[string]string) func(*Config) {
-	return func(c *Config) {
-		vs := make(map[template.JS]template.JS, len(props))
-		for k, v := range props {
-			vs[template.JS(k)] = template.JS(v)
-		}
-		c.UIConfig = vs
-	}
-}
+func UIConfig(props map[string]string) func(*Config) { _ = "STUB: not implemented"; return nil }
 
 // BeforeScript holds JavaScript to be run right before the Swagger UI object is created.
-func BeforeScript(js string) func(*Config) {
-	return func(c *Config) {
-		c.BeforeScript = template.JS(js)
-	}
-}
+func BeforeScript(js string) func(*Config) { _ = "STUB: not implemented"; return nil }
 
 // AfterScript holds JavaScript to be run right after the Swagger UI object is created
 // and set on the window.
-func AfterScript(js string) func(*Config) {
-	return func(c *Config) {
-		c.AfterScript = template.JS(js)
-	}
-}
+func AfterScript(js string) func(*Config) { _ = "STUB: not implemented"; return nil }
 
 type SwaggerLayout string
 
@@ -121,11 +70,7 @@ const (
 )
 
 // Define Layout options are BaseLayout or StandaloneLayout
-func Layout(layout SwaggerLayout) func(*Config) {
-	return func(c *Config) {
-		c.Layout = layout
-	}
-}
+func Layout(layout SwaggerLayout) func(*Config) { _ = "STUB: not implemented"; return nil }
 
 type ModelsExpandDepthType int
 
@@ -137,104 +82,26 @@ const (
 // DefaultModelsExpandDepth presents the model of response and request.
 // set the default expansion depth for models
 func DefaultModelsExpandDepth(defaultModelsExpandDepth ModelsExpandDepthType) func(*Config) {
-	return func(c *Config) {
-		c.DefaultModelsExpandDepth = defaultModelsExpandDepth
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // ShowExtensions controls the display of vendor extension (x-) fields and values for Operations,
 // Parameters, Responses, and Schema.
 func ShowExtensions(showExtensions bool) func(config *Config) {
-	return func(c *Config) {
-		c.ShowExtensions = showExtensions
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
 
-func newConfig(configFns ...func(*Config)) *Config {
-	config := Config{
-		URL:                      "doc.json",
-		DocExpansion:             "list",
-		DomID:                    "swagger-ui",
-		InstanceName:             "swagger",
-		DeepLinking:              true,
-		PersistAuthorization:     false,
-		Layout:                   StandaloneLayout,
-		DefaultModelsExpandDepth: ShowModel,
-		ShowExtensions:           false,
-	}
-
-	for _, fn := range configFns {
-		fn(&config)
-	}
-
-	if config.InstanceName == "" {
-		config.InstanceName = swag.Name
-	}
-
-	return &config
-}
+func newConfig(configFns ...func(*Config)) *Config { _ = "STUB: not implemented"; return nil }
 
 // Handler wraps `http.Handler` into `http.HandlerFunc`.
 func Handler(configFns ...func(*Config)) http.HandlerFunc {
-
-	config := newConfig(configFns...)
-
-	// create a template with name
-	index, _ := template.New("swagger_index.html").Parse(indexTempl)
-
-	re := regexp.MustCompile(`^(.*/)([^?].*)?[?|.]*$`)
-
-	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-
-			return
-		}
-
-		matches := re.FindStringSubmatch(r.RequestURI)
-
-		path := matches[2]
-
-		switch filepath.Ext(path) {
-		case ".html":
-			w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
-		case ".css":
-			w.Header().Set("Content-Type", "text/css; charset=utf-8")
-		case ".js":
-			w.Header().Set("Content-Type", "application/javascript")
-		case ".png":
-			w.Header().Set("Content-Type", "image/png")
-		case ".json":
-			w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		}
-
-		switch path {
-		case "index.html":
-			_ = index.Execute(w, config)
-		case "doc.json":
-			doc, err := swag.ReadDoc(config.InstanceName)
-			if err != nil {
-				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-
-				return
-			}
-
-			_, _ = w.Write([]byte(doc))
-		case "":
-			http.Redirect(w, r, matches[1]+"/"+"index.html", http.StatusMovedPermanently)
-		default:
-			var err error
-			r.URL, err = url.Parse(matches[2])
-			if err != nil {
-				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-
-				return
-			}
-			http.FileServer(http.FS(swaggerFiles.FS)).ServeHTTP(w, r)
-		}
-	}
+	_ = "STUB: not implemented"
+	return *new(http.HandlerFunc)
 }
+
+// create a template with name
 
 const indexTempl = `<!-- HTML for static distribution bundle build -->
 <!DOCTYPE html>
